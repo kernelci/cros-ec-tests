@@ -12,34 +12,34 @@ from cros.tests.cros_ec_power import *
 from cros.tests.cros_ec_extcon import *
 
 
-class LavaTestResult(unittest.TestResult):
-    def __init__(self, stream, descriptions, verbosity):
-        super().__init__(stream, descriptions, verbosity)
-        self.stream = stream
+class LavaTestResult(unittest.TextTestResult):
+    def writeLavaSignal(self, test, result):
+        test_case_id = test.id().rsplit(".")[-1]
+
+        # LAVA signal must be start-of-line.  Print a newline if verbosity >= 1.
+        if self.showAll or self.dots:
+            self.stream.writeln()
+
+        self.stream.writeln(
+            f"<LAVA_SIGNAL_TESTCASE TEST_CASE_ID={test_case_id} RESULT={result}>"
+        )
+        self.stream.flush()
 
     def addSuccess(self, test):
         super().addSuccess(test)
-        testcase = test.id().rsplit(".")[-1]
-        self.stream.write(
-            f"<LAVA_SIGNAL_TESTCASE TEST_CASE_ID={testcase} RESULT=pass>\n")
+        self.writeLavaSignal(test, "pass")
 
     def addError(self, test, err):
         super().addError(test, err)
-        testcase = test.id().rsplit(".")[-1]
-        self.stream.write(
-            f"<LAVA_SIGNAL_TESTCASE TEST_CASE_ID={testcase} RESULT=unknown>\n")
+        self.writeLavaSignal(test, "unknown")
 
     def addFailure(self, test, err):
         super().addFailure(test, err)
-        testcase = test.id().rsplit(".")[-1]
-        self.stream.write(
-            f"<LAVA_SIGNAL_TESTCASE TEST_CASE_ID={testcase} RESULT=fail>\n")
+        self.writeLavaSignal(test, "fail")
 
     def addSkip(self, test, reason):
         super().addSkip(test, reason)
-        testcase = test.id().rsplit(".")[-1]
-        self.stream.write(
-            f"<LAVA_SIGNAL_TESTCASE TEST_CASE_ID={testcase} RESULT=skip>\n")
+        self.writeLavaSignal(test, "skip")
 
 
 if __name__ == "__main__":
