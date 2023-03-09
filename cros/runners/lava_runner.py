@@ -13,7 +13,7 @@ from cros.tests.cros_ec_power import *
 from cros.tests.cros_ec_extcon import *
 
 
-class LavaTextTestResult(unittest.TestResult):
+class LavaTestResult(unittest.TestResult):
     def __init__(self, runner, verbosity=0):
         super().__init__()
         self.runner = runner
@@ -52,7 +52,7 @@ class LavaTestRunner:
         self.stream.write(message)
 
     def run(self, test):
-        result = LavaTextTestResult(self, self.verbosity)
+        result = LavaTestResult(self, self.verbosity)
         test(result)
         result.testsRun
         return result
