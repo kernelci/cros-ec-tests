@@ -112,8 +112,6 @@ def is_feature_supported(feature):
     global ECFEATURES
 
     if ECFEATURES == -1:
-        fd = open("/dev/cros_ec", "r")
-
         param = ec_params_get_features()
         response = ec_response_get_features()
 
@@ -124,10 +122,9 @@ def is_feature_supported(feature):
         cmd.outsize = sizeof(response)
 
         memmove(addressof(cmd.data), addressof(param), cmd.outsize)
-        fcntl.ioctl(fd, EC_DEV_IOCXCMD, cmd)
+        with open("/dev/cros_ec", "r") as fh:
+            fcntl.ioctl(fh, EC_DEV_IOCXCMD, cmd)
         memmove(addressof(response), addressof(cmd.data), cmd.outsize)
-
-        fd.close()
 
         if cmd.result == 0:
             ECFEATURES = response.out_data
