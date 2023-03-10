@@ -16,9 +16,8 @@ class TestCrosECRTC(unittest.TestCase):
             basepath = "/sys/class/rtc"
             for devname in os.listdir(basepath):
                 dev_basepath = os.path.join(basepath, devname)
-                fd = open(os.path.join(dev_basepath, "name"), "r")
-                devtype = fd.read()
-                fd.close()
+                with open(os.path.join(dev_basepath, "name"), "r") as fh:
+                    devtype = fh.read()
                 if devtype.startswith("cros-ec-rtc"):
                     files = [
                         "date",

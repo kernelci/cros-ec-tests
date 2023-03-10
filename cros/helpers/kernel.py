@@ -14,9 +14,8 @@ def current_kernel_version():
     """ Returns the current kernel version as an integer you can
         compare.
     """
-    fd = open("/proc/version", "r")
-    current = fd.read().split()[2].split("-")[0].split(".")
-    fd.close()
+    with open("/proc/version", "r") as fh:
+        current = fh.read().split()[2].split("-")[0].split(".")
     return version_to_int(int(current[0]), int(current[1]), int(current[2]))
 
 

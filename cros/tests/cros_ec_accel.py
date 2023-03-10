@@ -56,8 +56,8 @@ class TestCrosECAccel(unittest.TestCase):
             basepath = "/sys/bus/iio/devices"
             for devname in os.listdir(basepath):
                 dev_basepath = os.path.join(basepath, devname)
-                fd = open(os.path.join(dev_basepath, "name"), "r")
-                devtype = fd.read()
+                with open(os.path.join(dev_basepath, "name"), "r") as fh:
+                    devtype = fh.read()
                 if devtype.startswith("cros-ec-accel"):
                     accel_scale = float(read_file(os.path.join(dev_basepath, "scale")))
                     exp = ACCEL_1G_IN_MS2
@@ -75,7 +75,6 @@ class TestCrosECAccel(unittest.TestCase):
                                     msg=("Incorrect accelerometer data "
                                          f"in {dev_basepath} ({abs(mag - exp)})"))
                     match += 1
-                fd.close()
         except IOError as e:
             self.skipTest(f"{e}")
         if match == 0:

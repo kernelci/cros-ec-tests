@@ -33,12 +33,10 @@ class TestCrosECPWM(unittest.TestCase):
         fd.close()
         if not is_ec_pwm:
             self.skipTest("No EC backlight pwm found")
-        fd = open("/sys/class/backlight/backlight/max_brightness", "r")
-        brightness = int(int(fd.read()) / 2)
-        fd.close()
-        fd = open("/sys/class/backlight/backlight/brightness", "w")
-        fd.write(str(brightness))
-        fd.close()
+        with open("/sys/class/backlight/backlight/max_brightness", "r") as fh:
+            brightness = int(int(fh.read()) / 2)
+        with open("/sys/class/backlight/backlight/brightness", "w") as fh:
+            fh.write(str(brightness))
         with open("/sys/kernel/debug/pwm", "r") as fh:
             for line in fh:
                 if "backlight" in line:

@@ -151,7 +151,6 @@ def mcu_hello(s, name):
     devpath = os.path.join("/dev", name)
     if not os.path.exists(devpath):
         s.skipTest(f"MCU {name} not present")
-    fd = open(devpath, "r")
     param = ec_params_hello()
     param.in_data = 0xA0B0C0D0  # magic number that the EC expects on HELLO
 
@@ -164,10 +163,9 @@ def mcu_hello(s, name):
     cmd.outsize = sizeof(response)
 
     memmove(addressof(cmd.data), addressof(param), cmd.insize)
-    fcntl.ioctl(fd, EC_DEV_IOCXCMD, cmd)
+    with open(devpath, "r") as fh:
+        fcntl.ioctl(fh, EC_DEV_IOCXCMD, cmd)
     memmove(addressof(response), addressof(cmd.data), cmd.outsize)
-
-    fd.close()
 
     s.assertEqual(cmd.result, 0, msg="Error sending EC HELLO")
     # magic number that the EC answers on HELLO
@@ -177,8 +175,6 @@ def mcu_hello(s, name):
 def mcu_get_version(name):
     devpath = os.path.join("/dev", name)
     if os.path.exists(devpath):
-        fd = open(devpath, "r")
-
         response = ec_response_get_version()
 
         cmd = cros_ec_command()
@@ -187,25 +183,24 @@ def mcu_get_version(name):
         cmd.insize = sizeof(response)
         cmd.outsize = 0
 
-        fcntl.ioctl(fd, EC_DEV_IOCXCMD, cmd)
+        with open(devpath, "r") as fh:
+            fcntl.ioctl(fh, EC_DEV_IOCXCMD, cmd)
         memmove(addressof(response), addressof(cmd.data), cmd.insize)
 
-        fd.close()
         if cmd.result == 0:
             return response
 
 def mcu_reboot(name):
-    fd = open(os.path.join("/dev", name), "r")
     cmd = cros_ec_command()
     cmd.version = 0
     cmd.command = EC_CMD_REBOOT
     cmd.insize = 0
     cmd.outsize = 0
     try:
-        fcntl.ioctl(fd, EC_DEV_IOCXCMD, cmd)
+        with open(os.path.join("/dev", name), "r") as fh:
+            fcntl.ioctl(fh, EC_DEV_IOCXCMD, cmd)
     except IOError:
         pass
-    fd.close()
 
 def check_mcu_reboot_rw(s, name):
     if not os.path.exists(os.path.join("/dev", name)):
