@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from cros.helpers.sysfs import *
+import re
 import unittest
 import os
 
@@ -13,25 +14,14 @@ class TestCrosECPWM(unittest.TestCase):
         """
         if not os.path.exists("/sys/class/backlight/backlight/max_brightness"):
             self.skipTest("No backlight pwm found")
-        is_ec_pwm = False
         if not os.path.exists("/sys/kernel/debug/pwm"):
             self.skipTest("/sys/kernel/debug/pwm not found")
-        fd = open("/sys/kernel/debug/pwm", "r")
-        line = fd.readline()
-        while line and not is_ec_pwm:
-            if line[0] != " " and ":ec-pwm" in line:
-                line = fd.readline()
-                while line:
-                    if line[0] == "\n":
-                        is_ec_pwm = False
-                        break
-                    if "backlight" in line:
-                        is_ec_pwm = True
-                        break
-                    line = fd.readline()
-            line = fd.readline()
-        fd.close()
-        if not is_ec_pwm:
+        with open("/sys/kernel/debug/pwm", "r") as fh:
+            pwm = fh.read()
+        for s in pwm.split("\n\n"):
+            if re.match(r".*:ec-pwm.*backlight", s, re.DOTALL):
+                break
+        else:
             self.skipTest("No EC backlight pwm found")
         with open("/sys/class/backlight/backlight/max_brightness", "r") as fh:
             brightness = int(int(fh.read()) / 2)
