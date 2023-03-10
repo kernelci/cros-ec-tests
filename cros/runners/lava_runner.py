@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import functools
 import unittest
 
 from cros.tests.cros_ec_accel import *
@@ -42,9 +43,15 @@ class LavaTestResult(unittest.TextTestResult):
         self.writeLavaSignal(test, "skip")
 
 
+class LavaTestRunner(unittest.TextTestRunner):
+    __init__ = functools.partialmethod(
+                    unittest.TextTestRunner.__init__,
+                    resultclass=LavaTestResult)
+
+
 if __name__ == "__main__":
     unittest.main(
-        testRunner=unittest.TextTestRunner(resultclass=LavaTestResult),
+        testRunner=LavaTestRunner,
         # these make sure that some options that are not applicable
         # remain hidden from the help menu.
         failfast=False,
