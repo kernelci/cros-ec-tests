@@ -39,16 +39,13 @@ class TestCrosECPWM(unittest.TestCase):
         fd = open("/sys/class/backlight/backlight/brightness", "w")
         fd.write(str(brightness))
         fd.close()
-        fd = open("/sys/kernel/debug/pwm", "r")
-        line = fd.readline()
-        while line:
-            if "backlight" in line:
-                start = line.find("duty") + 6
-                self.assertNotEqual(start, 5, msg=f"error reading back PWM info: {line}")
-                end = start + line[start:].find(" ")
-                self.assertNotEqual(start, end, msg=f"error reading back PWM info: {line}")
-                duty = int(line[start:end])
-                self.assertNotEqual(duty, 0, msg=f"error reading back PWM info: {line}")
-                break
-            line = fd.readline()
-        fd.close()
+        with open("/sys/kernel/debug/pwm", "r") as fh:
+            for line in fh:
+                if "backlight" in line:
+                    start = line.find("duty") + 6
+                    self.assertNotEqual(start, 5, msg=f"error reading back PWM info: {line}")
+                    end = start + line[start:].find(" ")
+                    self.assertNotEqual(start, end, msg=f"error reading back PWM info: {line}")
+                    duty = int(line[start:end])
+                    self.assertNotEqual(duty, 0, msg=f"error reading back PWM info: {line}")
+                    break
