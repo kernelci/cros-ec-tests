@@ -90,11 +90,11 @@ class ec_response_get_version(Structure):
     ]
 
 class ec_params_get_features(Structure):
-    _fields_ = [("in_data", c_ulong)]
+    _fields_ = [("in_data", c_uint64)]
 
 
 class ec_response_get_features(Structure):
-    _fields_ = [("out_data", c_ulong)]
+    _fields_ = [("out_data", c_uint64)]
 
 
 def EC_FEATURE_MASK_0(event_code):
