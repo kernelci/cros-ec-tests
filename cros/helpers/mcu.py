@@ -89,12 +89,8 @@ class ec_response_get_version(Structure):
         ("current_image", c_uint),
     ]
 
-class ec_params_get_features(Structure):
-    _fields_ = [("in_data", c_uint64)]
-
-
 class ec_response_get_features(Structure):
-    _fields_ = [("out_data", c_uint64)]
+    _fields_ = [("in_data", c_uint64)]
 
 
 def EC_FEATURE_MASK_0(event_code):
@@ -112,22 +108,20 @@ def is_feature_supported(feature):
     global ECFEATURES
 
     if ECFEATURES == -1:
-        param = ec_params_get_features()
         response = ec_response_get_features()
 
         cmd = cros_ec_command()
         cmd.version = 0
         cmd.command = EC_CMD_GET_FEATURES
-        cmd.insize = sizeof(param)
-        cmd.outsize = sizeof(response)
+        cmd.insize = sizeof(response)
+        cmd.outsize = 0
 
-        memmove(addressof(cmd.data), addressof(param), cmd.outsize)
         with open("/dev/cros_ec", "r") as fh:
             fcntl.ioctl(fh, EC_DEV_IOCXCMD, cmd)
-        memmove(addressof(response), addressof(cmd.data), cmd.outsize)
+        memmove(addressof(response), addressof(cmd.data), cmd.insize)
 
         if cmd.result == 0:
-            ECFEATURES = response.out_data
+            ECFEATURES = response.in_data
         else:
             return False
 
