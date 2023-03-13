@@ -6,7 +6,7 @@ import os
 
 def read_file(name):
     """ Returns the content of the file named 'name'."""
-    with open(name, "r") as fh:
+    with open(name) as fh:
         contents = fh.read()
     return contents
 
@@ -20,7 +20,7 @@ def sysfs_check_attributes_exists(s, path, name, files, check_devtype):
     try:
         for devname in os.listdir(path):
             if check_devtype:
-                with open(os.path.join(path, devname, 'name'), "r") as fh:
+                with open(os.path.join(path, devname, 'name')) as fh:
                     devtype = fh.read()
                 if not devtype.startswith(name):
                     continue

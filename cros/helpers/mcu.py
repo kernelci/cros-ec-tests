@@ -116,7 +116,7 @@ def is_feature_supported(feature):
         cmd.insize = sizeof(response)
         cmd.outsize = 0
 
-        with open("/dev/cros_ec", "r") as fh:
+        with open("/dev/cros_ec") as fh:
             fcntl.ioctl(fh, EC_DEV_IOCXCMD, cmd)
         memmove(addressof(response), addressof(cmd.data), cmd.insize)
 
@@ -157,7 +157,7 @@ def mcu_hello(s, name):
     cmd.outsize = sizeof(response)
 
     memmove(addressof(cmd.data), addressof(param), cmd.insize)
-    with open(devpath, "r") as fh:
+    with open(devpath) as fh:
         fcntl.ioctl(fh, EC_DEV_IOCXCMD, cmd)
     memmove(addressof(response), addressof(cmd.data), cmd.outsize)
 
@@ -177,7 +177,7 @@ def mcu_get_version(name):
         cmd.insize = sizeof(response)
         cmd.outsize = 0
 
-        with open(devpath, "r") as fh:
+        with open(devpath) as fh:
             fcntl.ioctl(fh, EC_DEV_IOCXCMD, cmd)
         memmove(addressof(response), addressof(cmd.data), cmd.insize)
 
@@ -191,7 +191,7 @@ def mcu_reboot(name):
     cmd.insize = 0
     cmd.outsize = 0
     try:
-        with open(os.path.join("/dev", name), "r") as fh:
+        with open(os.path.join("/dev", name)) as fh:
             fcntl.ioctl(fh, EC_DEV_IOCXCMD, cmd)
     except IOError:
         pass
