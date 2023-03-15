@@ -190,23 +190,18 @@ def mcu_get_version(name):
         if cmd.result == 0:
             return response
 
-def mcu_reboot(name):
+def check_mcu_reboot_rw(s, name):
+    if not os.path.exists(os.path.join("/dev", name)):
+        s.skipTest("cros_fp not present")
+
     cmd = cros_ec_command()
     cmd.version = 0
     cmd.command = EC_CMD_REBOOT
     cmd.insize = 0
     cmd.outsize = 0
-    try:
-        with open(os.path.join("/dev", name)) as fh:
-            fcntl.ioctl(fh, EC_DEV_IOCXCMD, cmd)
-    except IOError:
-        pass
+    with open(os.path.join("/dev", name)) as fh:
+        fcntl.ioctl(fh, EC_DEV_IOCXCMD, cmd)
 
-def check_mcu_reboot_rw(s, name):
-    if not os.path.exists(os.path.join("/dev", name)):
-        s.skipTest("cros_fp not present")
-    mcu_reboot(name)
     response = mcu_get_version(name)
     s.assertEqual(response.current_image, EC_IMAGE_RW,
                   msg="Current EC image is not RW")
-
