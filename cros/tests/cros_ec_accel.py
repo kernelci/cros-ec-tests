@@ -63,7 +63,8 @@ class TestCrosECAccel(unittest.TestCase):
                 with open(os.path.join(dev_basepath, "name")) as fh:
                     devtype = fh.read()
                 if devtype.startswith("cros-ec-accel"):
-                    accel_scale = float(read_file(os.path.join(dev_basepath, "scale")))
+                    with open(os.path.join(dev_basepath, "scale")) as fh:
+                        accel_scale = float(fh.read())
                     exp = ACCEL_1G_IN_MS2
                     err = exp * ACCEL_MAG_VALID_OFFSET
                     mag = 0
@@ -71,7 +72,8 @@ class TestCrosECAccel(unittest.TestCase):
                                  "in_accel_y_raw",
                                  "in_accel_z_raw"]:
                         axis_path = os.path.join(dev_basepath, axis)
-                        value = int(read_file(axis_path))
+                        with open(axis_path) as fh:
+                            value = int(fh.read())
                         value *= accel_scale
                         mag += value * value
                     mag = math.sqrt(mag)

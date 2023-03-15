@@ -4,13 +4,6 @@
 import os
 
 
-def read_file(name):
-    """ Returns the content of the file named 'name'."""
-    with open(name) as fh:
-        contents = fh.read()
-    return contents
-
-
 def sysfs_check_attributes_exists(s, path, name, files, check_devtype):
     """ Checks that all attributes listed in 'files' for a given 'path' exists.
         Note that the 'name' parameter is used to define a pattern to match

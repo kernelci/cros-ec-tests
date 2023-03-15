@@ -4,8 +4,6 @@
 import unittest
 import os
 
-from cros.helpers.sysfs import read_file
-
 
 class TestCrosECextcon(unittest.TestCase):
     def test_cros_ec_extcon_usbc_abi(self):
@@ -15,7 +13,8 @@ class TestCrosECextcon(unittest.TestCase):
             basepath = "/sys/class/extcon"
             for devname in os.listdir(basepath):
                 dev_basepath = os.path.join(basepath, devname)
-                devtype = read_file(os.path.join(dev_basepath, "name"))
+                with open(os.path.join(dev_basepath, "name")) as fh:
+                    devtype = fh.read()
                 if ".spi:ec@0:extcon@" in devtype:
                     p = os.path.join(dev_basepath, "state")
                     self.assertTrue(os.path.exists(p), msg=f"{p} not found")
