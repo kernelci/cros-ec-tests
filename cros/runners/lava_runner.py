@@ -4,14 +4,6 @@
 import functools
 import unittest
 
-from cros.tests.cros_ec_accel import *
-from cros.tests.cros_ec_gyro import *
-from cros.tests.cros_ec_mcu import *
-from cros.tests.cros_ec_pwm import *
-from cros.tests.cros_ec_rtc import *
-from cros.tests.cros_ec_power import *
-from cros.tests.cros_ec_extcon import *
-
 
 class LavaTestResult(unittest.TextTestResult):
     def writeLavaSignal(self, test, result):
@@ -51,6 +43,7 @@ class LavaTestRunner(unittest.TextTestRunner):
 
 if __name__ == "__main__":
     unittest.main(
+        module="cros.tests",
         testRunner=LavaTestRunner,
         # these make sure that some options that are not applicable
         # remain hidden from the help menu.
