@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from cros.helpers.sysfs import *
 import re
 import unittest
 import os
+
 
 class TestCrosECPWM(unittest.TestCase):
     def test_cros_ec_pwm_backlight(self):

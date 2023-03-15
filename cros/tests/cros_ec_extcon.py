@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from cros.helpers.sysfs import *
 import unittest
 import os
+
+from cros.helpers.sysfs import read_file
+
 
 class TestCrosECextcon(unittest.TestCase):
     def test_cros_ec_extcon_usbc_abi(self):

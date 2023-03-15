@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from cros.helpers.kernel import *
-from cros.helpers.mcu import *
-from cros.helpers.sysfs import *
 import math
 import unittest
 import os
+
+from cros.helpers.kernel import kernel_greater_than
+from cros.helpers.kernel import kernel_lower_than
+from cros.helpers.mcu import EC_FEATURE_MOTION_SENSE_FIFO
+from cros.helpers.mcu import is_feature_supported
+from cros.helpers.sysfs import sysfs_check_attributes_exists
+
 
 class TestCrosECAccel(unittest.TestCase):
     def test_cros_ec_accel_iio_abi(self):

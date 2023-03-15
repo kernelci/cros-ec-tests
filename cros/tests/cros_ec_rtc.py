@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from cros.helpers.mcu import *
-from cros.helpers.sysfs import *
 import unittest
 import os
+
+from cros.helpers.mcu import EC_FEATURE_RTC
+from cros.helpers.mcu import is_feature_supported
+
 
 class TestCrosECRTC(unittest.TestCase):
     def test_cros_ec_rtc_abi(self):

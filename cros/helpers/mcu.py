@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from ctypes import addressof
+from ctypes import c_ubyte, c_uint, c_uint64
+from ctypes import memmove
+from ctypes import sizeof
+from ctypes import Structure
 import fcntl
 import os
-from cros.helpers.sysfs import *
-from ctypes import *
+
+from cros.helpers.sysfs import sysfs_check_attributes_exists
+
 
 EC_CMD_PROTO_VERSION = 0x0000
 EC_CMD_HELLO = 0x0001

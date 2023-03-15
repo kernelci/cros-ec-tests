@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from cros.helpers.mcu import *
 import fcntl
+import os
 import unittest
+
+from cros.helpers.mcu import check_mcu_abi
+from cros.helpers.mcu import check_mcu_reboot_rw
+from cros.helpers.mcu import mcu_hello
 
 
 class TestCrosECMCU(unittest.TestCase):
