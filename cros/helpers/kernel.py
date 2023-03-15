@@ -23,15 +23,11 @@ def kernel_lower_than(version, major, minor):
     """ Returns true if the given version is lower than the running kernel
         version.
     """
-    if version_to_int(version, major, minor) > current_kernel_version():
-        return True
-    return False
+    return current_kernel_version() < version_to_int(version, major, minor)
 
 
 def kernel_greater_than(version, major, minor):
     """ Returns true if the given version is greater than the running kernel
         version.
     """
-    if version_to_int(version, major, minor) < current_kernel_version():
-        return True
-    return False
+    return current_kernel_version() > version_to_int(version, major, minor)
