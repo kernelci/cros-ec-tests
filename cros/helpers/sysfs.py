@@ -13,7 +13,7 @@ def sysfs_check_attributes_exists(s, path, name, files, check_devtype):
     try:
         for devname in os.listdir(path):
             if check_devtype:
-                with open(os.path.join(path, devname, 'name')) as fh:
+                with open(os.path.join(path, devname, "name")) as fh:
                     devtype = fh.read()
                 if not devtype.startswith(name):
                     continue
