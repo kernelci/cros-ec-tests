@@ -6,10 +6,10 @@ import math
 import os
 import unittest
 
+from cros.helpers.ec_cmd import EC_FEATURE_MOTION_SENSE_FIFO
+from cros.helpers.ec_cmd import is_feature_supported
 from cros.helpers.kernel import kernel_greater_than
 from cros.helpers.kernel import kernel_lower_than
-from cros.helpers.mcu import EC_FEATURE_MOTION_SENSE_FIFO
-from cros.helpers.mcu import is_feature_supported
 from cros.helpers.sysfs import sysfs_check_attributes_exists
 
 

@@ -8,10 +8,10 @@ kernel
 .. automodule:: cros.helpers.kernel
    :members:
 
-mcu
+ec_cmd
 ===
 
-.. automodule:: cros.helpers.mcu
+.. automodule:: cros.helpers.ec_cmd
    :members:
 
 sysfs

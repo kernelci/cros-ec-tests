@@ -8,11 +8,11 @@ import fcntl
 import os
 import unittest
 
-from cros.helpers.mcu import cros_ec_command
-from cros.helpers.mcu import EC_CMD_GET_VERSION, EC_CMD_HELLO, EC_CMD_REBOOT
-from cros.helpers.mcu import EC_DEV_IOCXCMD
-from cros.helpers.mcu import ec_params_hello
-from cros.helpers.mcu import ec_response_hello
+from cros.helpers.ec_cmd import cros_ec_command
+from cros.helpers.ec_cmd import EC_CMD_GET_VERSION, EC_CMD_HELLO, EC_CMD_REBOOT
+from cros.helpers.ec_cmd import EC_DEV_IOCXCMD
+from cros.helpers.ec_cmd import ec_params_hello
+from cros.helpers.ec_cmd import ec_response_hello
 from cros.helpers.sysfs import sysfs_check_attributes_exists
 
 

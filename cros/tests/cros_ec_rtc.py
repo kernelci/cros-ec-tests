@@ -4,8 +4,8 @@
 import unittest
 import os
 
-from cros.helpers.mcu import EC_FEATURE_RTC
-from cros.helpers.mcu import is_feature_supported
+from cros.helpers.ec_cmd import EC_FEATURE_RTC
+from cros.helpers.ec_cmd import is_feature_supported
 
 
 class TestCrosECRTC(unittest.TestCase):
