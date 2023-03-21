@@ -204,7 +204,7 @@ def mcu_get_version(name):
 
 def check_mcu_reboot_rw(s, name):
     if not os.path.exists(os.path.join("/dev", name)):
-        s.skipTest("cros_fp not present")
+        s.skipTest(f"MCU {name} not present")
 
     cmd = cros_ec_command()
     cmd.version = 0
