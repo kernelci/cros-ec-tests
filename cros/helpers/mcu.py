@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from ctypes import addressof
-from ctypes import c_ubyte, c_uint, c_uint64
+from ctypes import c_ubyte, c_uint8, c_uint32, c_uint64
 from ctypes import memmove
 from ctypes import sizeof
 from ctypes import Structure
@@ -71,28 +71,29 @@ EC_IMAGE_RW = 2
 
 class cros_ec_command(Structure):
     _fields_ = [
-        ("version", c_uint),
-        ("command", c_uint),
-        ("outsize", c_uint),
-        ("insize", c_uint),
-        ("result", c_uint),
-        ("data", c_ubyte * EC_HOST_PARAM_SIZE),
+        ("version", c_uint32),
+        ("command", c_uint32),
+        ("outsize", c_uint32),
+        ("insize", c_uint32),
+        ("result", c_uint32),
+        ("data", c_uint8 * EC_HOST_PARAM_SIZE),
     ]
 
 
 class ec_params_hello(Structure):
-    _fields_ = [("in_data", c_uint)]
+    _fields_ = [("in_data", c_uint32)]
 
 
 class ec_response_hello(Structure):
-    _fields_ = [("out_data", c_uint)]
+    _fields_ = [("out_data", c_uint32)]
+
 
 class ec_response_get_version(Structure):
     _fields_ = [
         ("version_string_ro", c_ubyte * 32),
         ("version_string_rw", c_ubyte * 32),
         ("reserved", c_ubyte * 32),
-        ("current_image", c_uint),
+        ("current_image", c_uint32),
     ]
 
 class ec_response_get_features(Structure):
