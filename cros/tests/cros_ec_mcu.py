@@ -8,9 +8,8 @@ import fcntl
 import os
 import unittest
 
-from cros.helpers.mcu import check_mcu_reboot_rw
 from cros.helpers.mcu import cros_ec_command
-from cros.helpers.mcu import EC_CMD_HELLO
+from cros.helpers.mcu import EC_CMD_GET_VERSION, EC_CMD_HELLO, EC_CMD_REBOOT
 from cros.helpers.mcu import EC_DEV_IOCXCMD
 from cros.helpers.mcu import ec_params_hello
 from cros.helpers.mcu import ec_response_hello
@@ -96,6 +95,36 @@ class TestCrosECMCU(unittest.TestCase):
         """ Checks basic comunication with the power delivery controller. """
         self.check_hello("cros_pd")
 
+    def check_reboot_rw(self, name):
+        devpath = os.path.join("/dev", name)
+        if not os.path.exists(devpath):
+            self.skipTest(f"MCU {name} not found")
+
+        cmd = cros_ec_command()
+        cmd.version = 0
+        cmd.command = EC_CMD_REBOOT
+        cmd.insize = 0
+        cmd.outsize = 0
+
+        with open(devpath) as fh:
+            fcntl.ioctl(fh, EC_DEV_IOCXCMD, cmd)
+
+        response = ec_response_get_version()
+
+        cmd = cros_ec_command()
+        cmd.version = 0
+        cmd.command = EC_CMD_GET_VERSION
+        cmd.insize = sizeof(response)
+        cmd.outsize = 0
+
+        with open(devpath) as fh:
+            fcntl.ioctl(fh, EC_DEV_IOCXCMD, cmd)
+        self.assertEqual(cmd.result, 0, msg="Failed to GET_VERSION")
+
+        memmove(addressof(response), addressof(cmd.data), cmd.insize)
+        self.assertEqual(response.current_image, EC_IMAGE_RW,
+                         msg="Current EC image is not RW")
+
     def test_cros_fp_reboot(self):
         """ Test reboot command on Fingerprint MCU.
 
@@ -114,4 +143,4 @@ class TestCrosECMCU(unittest.TestCase):
             ("platform/chrome: cros_ec: Query EC protocol version if EC
             transitions between RO/RW).
         """
-        check_mcu_reboot_rw(self, "cros_fp")
+        self.check_reboot_rw("cros_fp")

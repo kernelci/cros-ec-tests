@@ -7,7 +7,6 @@ from ctypes import memmove
 from ctypes import sizeof
 from ctypes import Structure
 import fcntl
-import os
 
 
 EC_HOST_PARAM_SIZE = 0xFC
@@ -134,46 +133,3 @@ def is_feature_supported(feature):
             return False
 
     return bool(ECFEATURES_CACHE & EC_FEATURE_MASK_0(feature))
-
-
-def mcu_get_version(name):
-    devpath = os.path.join("/dev", name)
-    if not os.path.exists(devpath):
-        return None
-
-    response = ec_response_get_version()
-
-    cmd = cros_ec_command()
-    cmd.version = 0
-    cmd.command = EC_CMD_GET_VERSION
-    cmd.insize = sizeof(response)
-    cmd.outsize = 0
-
-    with open(devpath) as fh:
-        fcntl.ioctl(fh, EC_DEV_IOCXCMD, cmd)
-    memmove(addressof(response), addressof(cmd.data), cmd.insize)
-
-    if cmd.result == 0:
-        return response
-    else:
-        return None
-
-
-def check_mcu_reboot_rw(s, name):
-    devpath = os.path.join("/dev", name)
-    if not os.path.exists(devpath):
-        s.skipTest(f"MCU {name} not found")
-
-    cmd = cros_ec_command()
-    cmd.version = 0
-    cmd.command = EC_CMD_REBOOT
-    cmd.insize = 0
-    cmd.outsize = 0
-
-    with open(devpath) as fh:
-        fcntl.ioctl(fh, EC_DEV_IOCXCMD, cmd)
-
-    response = mcu_get_version(name)
-    s.assertIsNotNone(response, msg="Failed to GET_VERSION")
-    s.assertEqual(response.current_image, EC_IMAGE_RW,
-                  msg="Current EC image is not RW")
