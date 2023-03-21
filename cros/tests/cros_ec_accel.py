@@ -33,7 +33,7 @@ class TestCrosECAccel(unittest.TestCase):
             "sampling_frequency",
             "sampling_frequency_available",
             "scale",
-            "scan_elements/",
+            "scan_elements",
             "trigger",
         ]
         if (kernel_greater_than(5, 6, 0) and
