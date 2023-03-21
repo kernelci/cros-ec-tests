@@ -22,7 +22,7 @@ EC_CMD_GET_VERSION = 0x0002
 EC_CMD_GET_FEATURES = 0x000D
 EC_CMD_REBOOT = 0x00D1
 
-ECFEATURES = -1
+ECFEATURES_CACHE = -1
 # EC features
 EC_FEATURE_LIMITED = 0
 EC_FEATURE_FLASH = 1
@@ -115,9 +115,9 @@ def is_feature_supported(feature):
     """ Returns true if the Embedded Controller supports the specified
         'feature'.
     """
-    global ECFEATURES
+    global ECFEATURES_CACHE
 
-    if ECFEATURES == -1:
+    if ECFEATURES_CACHE == -1:
         response = ec_response_get_features()
 
         cmd = cros_ec_command()
@@ -131,11 +131,11 @@ def is_feature_supported(feature):
         memmove(addressof(response), addressof(cmd.data), cmd.insize)
 
         if cmd.result == 0:
-            ECFEATURES = response.in_data
+            ECFEATURES_CACHE = response.in_data
         else:
             return False
 
-    return (ECFEATURES & EC_FEATURE_MASK_0(feature)) > 0
+    return (ECFEATURES_CACHE & EC_FEATURE_MASK_0(feature)) > 0
 
 
 def check_mcu_abi(s, name):
