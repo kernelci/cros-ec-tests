@@ -203,8 +203,9 @@ def mcu_get_version(name):
 
 
 def check_mcu_reboot_rw(s, name):
-    if not os.path.exists(os.path.join("/dev", name)):
-        s.skipTest(f"MCU {name} not present")
+    devpath = os.path.join("/dev", name)
+    if not os.path.exists(devpath):
+        s.skipTest(f"MCU {name} not found")
 
     cmd = cros_ec_command()
     cmd.version = 0
@@ -212,7 +213,7 @@ def check_mcu_reboot_rw(s, name):
     cmd.insize = 0
     cmd.outsize = 0
 
-    with open(os.path.join("/dev", name)) as fh:
+    with open(devpath) as fh:
         fcntl.ioctl(fh, EC_DEV_IOCXCMD, cmd)
 
     response = mcu_get_version(name)
