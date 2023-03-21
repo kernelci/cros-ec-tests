@@ -135,7 +135,7 @@ def is_feature_supported(feature):
         else:
             return False
 
-    return (ECFEATURES_CACHE & EC_FEATURE_MASK_0(feature)) > 0
+    return bool(ECFEATURES_CACHE & EC_FEATURE_MASK_0(feature))
 
 
 def check_mcu_abi(s, name):
