@@ -66,13 +66,13 @@ class TestCrosECMCU(unittest.TestCase):
         cmd = cros_ec_command()
         cmd.version = 0
         cmd.command = EC_CMD_HELLO
-        cmd.insize = sizeof(param)
-        cmd.outsize = sizeof(response)
+        cmd.insize = sizeof(response)
+        cmd.outsize = sizeof(param)
 
-        memmove(addressof(cmd.data), addressof(param), cmd.insize)
+        memmove(addressof(cmd.data), addressof(param), cmd.outsize)
         with open(devpath) as fh:
             fcntl.ioctl(fh, EC_DEV_IOCXCMD, cmd)
-        memmove(addressof(response), addressof(cmd.data), cmd.outsize)
+        memmove(addressof(response), addressof(cmd.data), cmd.insize)
 
         self.assertEqual(cmd.result, 0, msg="Error sending EC HELLO")
         # magic number that the EC answers on HELLO
