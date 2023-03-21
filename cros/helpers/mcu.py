@@ -181,21 +181,26 @@ def mcu_hello(s, name):
 
 def mcu_get_version(name):
     devpath = os.path.join("/dev", name)
-    if os.path.exists(devpath):
-        response = ec_response_get_version()
+    if not os.path.exists(devpath):
+        return None
 
-        cmd = cros_ec_command()
-        cmd.version = 0
-        cmd.command = EC_CMD_GET_VERSION
-        cmd.insize = sizeof(response)
-        cmd.outsize = 0
+    response = ec_response_get_version()
 
-        with open(devpath) as fh:
-            fcntl.ioctl(fh, EC_DEV_IOCXCMD, cmd)
-        memmove(addressof(response), addressof(cmd.data), cmd.insize)
+    cmd = cros_ec_command()
+    cmd.version = 0
+    cmd.command = EC_CMD_GET_VERSION
+    cmd.insize = sizeof(response)
+    cmd.outsize = 0
 
-        if cmd.result == 0:
-            return response
+    with open(devpath) as fh:
+        fcntl.ioctl(fh, EC_DEV_IOCXCMD, cmd)
+    memmove(addressof(response), addressof(cmd.data), cmd.insize)
+
+    if cmd.result == 0:
+        return response
+    else:
+        return None
+
 
 def check_mcu_reboot_rw(s, name):
     if not os.path.exists(os.path.join("/dev", name)):
@@ -211,5 +216,6 @@ def check_mcu_reboot_rw(s, name):
         fcntl.ioctl(fh, EC_DEV_IOCXCMD, cmd)
 
     response = mcu_get_version(name)
+    s.assertIsNotNone(response, msg="Failed to GET_VERSION")
     s.assertEqual(response.current_image, EC_IMAGE_RW,
                   msg="Current EC image is not RW")
