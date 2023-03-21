@@ -1,12 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from ctypes import addressof
+from ctypes import memmove
+from ctypes import sizeof
 import fcntl
 import os
 import unittest
 
 from cros.helpers.mcu import check_mcu_reboot_rw
-from cros.helpers.mcu import mcu_hello
+from cros.helpers.mcu import cros_ec_command
+from cros.helpers.mcu import EC_CMD_HELLO
+from cros.helpers.mcu import EC_DEV_IOCXCMD
+from cros.helpers.mcu import ec_params_hello
+from cros.helpers.mcu import ec_response_hello
 from cros.helpers.sysfs import sysfs_check_attributes_exists
 
 
@@ -45,21 +52,49 @@ class TestCrosECMCU(unittest.TestCase):
         self.assertTrue(os.path.exists("/dev/cros_ec"),
                         msg="/dev/cros_ec not found")
 
+    def check_hello(self, name):
+        """ Checks basic comunication with MCU. """
+        devpath = os.path.join("/dev", name)
+        if not os.path.exists(devpath):
+            self.skipTest(f"MCU {name} not found")
+
+        param = ec_params_hello()
+        # magic number that the EC expects on HELLO
+        param.in_data = 0xA0B0C0D0
+
+        response = ec_response_hello()
+
+        cmd = cros_ec_command()
+        cmd.version = 0
+        cmd.command = EC_CMD_HELLO
+        cmd.insize = sizeof(param)
+        cmd.outsize = sizeof(response)
+
+        memmove(addressof(cmd.data), addressof(param), cmd.insize)
+        with open(devpath) as fh:
+            fcntl.ioctl(fh, EC_DEV_IOCXCMD, cmd)
+        memmove(addressof(response), addressof(cmd.data), cmd.outsize)
+
+        self.assertEqual(cmd.result, 0, msg="Error sending EC HELLO")
+        # magic number that the EC answers on HELLO
+        self.assertEqual(response.out_data, 0xA1B2C3D4,
+                         msg=f"Wrong EC HELLO magic number ({response.out_data})")
+
     def test_cros_ec_hello(self):
         """ Checks basic comunication with the main Embedded controller. """
-        mcu_hello(self, "cros_ec")
+        self.check_hello("cros_ec")
 
     def test_cros_fp_hello(self):
         """ Checks basic comunication with the fingerprint controller. """
-        mcu_hello(self, "cros_fp")
+        self.check_hello("cros_fp")
 
     def test_cros_tp_hello(self):
         """ Checks basic comunication with the touchpad controller. """
-        mcu_hello(self, "cros_tp")
+        self.check_hello("cros_tp")
 
     def test_cros_pd_hello(self):
         """ Checks basic comunication with the power delivery controller. """
-        mcu_hello(self, "cros_pd")
+        self.check_hello("cros_pd")
 
     def test_cros_fp_reboot(self):
         """ Test reboot command on Fingerprint MCU.

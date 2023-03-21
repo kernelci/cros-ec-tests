@@ -136,34 +136,6 @@ def is_feature_supported(feature):
     return bool(ECFEATURES_CACHE & EC_FEATURE_MASK_0(feature))
 
 
-def mcu_hello(s, name):
-    """ Checks basic comunication with MCU. """
-    devpath = os.path.join("/dev", name)
-    if not os.path.exists(devpath):
-        s.skipTest(f"MCU {name} not present")
-
-    param = ec_params_hello()
-    param.in_data = 0xA0B0C0D0  # magic number that the EC expects on HELLO
-
-    response = ec_response_hello()
-
-    cmd = cros_ec_command()
-    cmd.version = 0
-    cmd.command = EC_CMD_HELLO
-    cmd.insize = sizeof(param)
-    cmd.outsize = sizeof(response)
-
-    memmove(addressof(cmd.data), addressof(param), cmd.insize)
-    with open(devpath) as fh:
-        fcntl.ioctl(fh, EC_DEV_IOCXCMD, cmd)
-    memmove(addressof(response), addressof(cmd.data), cmd.outsize)
-
-    s.assertEqual(cmd.result, 0, msg="Error sending EC HELLO")
-    # magic number that the EC answers on HELLO
-    s.assertEqual(response.out_data, 0xA1B2C3D4,
-                  msg=f"Wrong EC HELLO magic number ({response.out_data})")
-
-
 def mcu_get_version(name):
     devpath = os.path.join("/dev", name)
     if not os.path.exists(devpath):
