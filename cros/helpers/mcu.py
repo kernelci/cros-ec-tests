@@ -12,18 +12,18 @@ import os
 from cros.helpers.sysfs import sysfs_check_attributes_exists
 
 
+EC_HOST_PARAM_SIZE = 0xFC
+EC_DEV_IOCXCMD = 0xC014EC00  # _IOWR(EC_DEV_IOC, 0, struct cros_ec_command)
+
+# EC commands
 EC_CMD_PROTO_VERSION = 0x0000
 EC_CMD_HELLO = 0x0001
 EC_CMD_GET_VERSION = 0x0002
 EC_CMD_GET_FEATURES = 0x000D
 EC_CMD_REBOOT = 0x00D1
 
-EC_HOST_PARAM_SIZE = 0xFC
-
-EC_DEV_IOCXCMD = 0xC014EC00  # _IOWR(EC_DEV_IOC, 0, struct cros_ec_command)
-
 ECFEATURES = -1
-# Supported features
+# EC features
 EC_FEATURE_LIMITED = 0
 EC_FEATURE_FLASH = 1
 EC_FEATURE_PWM_FAN = 2
@@ -65,9 +65,11 @@ EC_FEATURE_REFINED_TABLET_MODE_HYSTERESIS = 37
 EC_FEATURE_SCP = 39
 EC_FEATURE_ISH = 40
 
+# enum ec_current_image
 EC_IMAGE_UNKNOWN = 0
 EC_IMAGE_RO = 1
 EC_IMAGE_RW = 2
+
 
 class cros_ec_command(Structure):
     _fields_ = [
@@ -95,6 +97,7 @@ class ec_response_get_version(Structure):
         ("reserved", c_ubyte * 32),
         ("current_image", c_uint32),
     ]
+
 
 class ec_response_get_features(Structure):
     _fields_ = [("in_data", c_uint64)]
@@ -141,6 +144,7 @@ def check_mcu_abi(s, name):
     """
     if not os.path.exists(os.path.join("/dev", name)):
         s.skipTest(f"MCU {name} not supported")
+
     files = ["flashinfo", "reboot", "version"]
     sysfs_check_attributes_exists(
         s, "/sys/class/chromeos/", name, files, False
@@ -152,6 +156,7 @@ def mcu_hello(s, name):
     devpath = os.path.join("/dev", name)
     if not os.path.exists(devpath):
         s.skipTest(f"MCU {name} not present")
+
     param = ec_params_hello()
     param.in_data = 0xA0B0C0D0  # magic number that the EC expects on HELLO
 
@@ -172,6 +177,7 @@ def mcu_hello(s, name):
     # magic number that the EC answers on HELLO
     s.assertEqual(response.out_data, 0xA1B2C3D4,
                   msg=f"Wrong EC HELLO magic number ({response.out_data})")
+
 
 def mcu_get_version(name):
     devpath = os.path.join("/dev", name)
@@ -200,6 +206,7 @@ def check_mcu_reboot_rw(s, name):
     cmd.command = EC_CMD_REBOOT
     cmd.insize = 0
     cmd.outsize = 0
+
     with open(os.path.join("/dev", name)) as fh:
         fcntl.ioctl(fh, EC_DEV_IOCXCMD, cmd)
 
