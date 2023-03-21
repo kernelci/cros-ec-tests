@@ -5,27 +5,40 @@ import fcntl
 import os
 import unittest
 
-from cros.helpers.mcu import check_mcu_abi
 from cros.helpers.mcu import check_mcu_reboot_rw
 from cros.helpers.mcu import mcu_hello
+from cros.helpers.sysfs import sysfs_check_attributes_exists
 
 
 class TestCrosECMCU(unittest.TestCase):
+    def check_abi(self, name):
+        """ Checks that the MCU character device exists in /dev and then verifies
+            the standard MCU ABI in /sys/class/chromeos.
+        """
+        dev = os.path.join("/dev", name)
+        if not os.path.exists(dev):
+            self.skipTest(f"MCU {name} not supported")
+
+        files = ["flashinfo", "reboot", "version"]
+        sysfs_check_attributes_exists(
+            self, "/sys/class/chromeos/", name, files, False
+        )
+
     def test_cros_ec_abi(self):
         """ Checks the standard ABI for the main Embedded Controller. """
-        check_mcu_abi(self, "cros_ec")
+        self.check_abi("cros_ec")
 
     def test_cros_fp_abi(self):
         """ Checks the standard ABI for the Fingerprint EC. """
-        check_mcu_abi(self, "cros_fp")
+        self.check_abi("cros_fp")
 
     def test_cros_tp_abi(self):
         """ Checks the standard ABI for the Touchpad EC. """
-        check_mcu_abi(self, "cros_tp")
+        self.check_abi("cros_tp")
 
     def test_cros_pd_abi(self):
         """ Checks the standard ABI for the Power Delivery EC. """
-        check_mcu_abi(self, "cros_pd")
+        self.check_abi("cros_pd")
 
     def test_cros_ec_chardev(self):
         """ Checks the main Embedded controller character device. """

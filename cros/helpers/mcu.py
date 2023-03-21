@@ -9,8 +9,6 @@ from ctypes import Structure
 import fcntl
 import os
 
-from cros.helpers.sysfs import sysfs_check_attributes_exists
-
 
 EC_HOST_PARAM_SIZE = 0xFC
 EC_DEV_IOCXCMD = 0xC014EC00  # _IOWR(EC_DEV_IOC, 0, struct cros_ec_command)
@@ -136,19 +134,6 @@ def is_feature_supported(feature):
             return False
 
     return bool(ECFEATURES_CACHE & EC_FEATURE_MASK_0(feature))
-
-
-def check_mcu_abi(s, name):
-    """ Checks that the MCU character device exists in /dev and then verifies
-        the standard MCU ABI in /sys/class/chromeos.
-    """
-    if not os.path.exists(os.path.join("/dev", name)):
-        s.skipTest(f"MCU {name} not supported")
-
-    files = ["flashinfo", "reboot", "version"]
-    sysfs_check_attributes_exists(
-        s, "/sys/class/chromeos/", name, files, False
-    )
 
 
 def mcu_hello(s, name):
