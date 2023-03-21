@@ -1,18 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from ctypes import addressof
-from ctypes import memmove
-from ctypes import sizeof
-import fcntl
 import os
 import unittest
 
-from cros.helpers.ec_cmd import cros_ec_command
-from cros.helpers.ec_cmd import EC_CMD_GET_VERSION, EC_CMD_HELLO, EC_CMD_REBOOT
-from cros.helpers.ec_cmd import EC_DEV_IOCXCMD
-from cros.helpers.ec_cmd import ec_params_hello
-from cros.helpers.ec_cmd import ec_response_hello
+from cros.helpers.ec_cmd import ec_params_hello, ec_response_hello
+from cros.helpers.ec_cmd import send_ec_command
+from cros.helpers import ec_cmd
 from cros.helpers.sysfs import sysfs_check_attributes_exists
 
 
@@ -53,27 +47,15 @@ class TestCrosECMCU(unittest.TestCase):
 
     def check_hello(self, name):
         """ Checks basic comunication with MCU. """
-        devpath = os.path.join("/dev", name)
-        if not os.path.exists(devpath):
+        dev = os.path.join("/dev", name)
+        if not os.path.exists(dev):
             self.skipTest(f"MCU {name} not found")
 
-        param = ec_params_hello()
+        param, response = ec_params_hello(), ec_response_hello()
         # magic number that the EC expects on HELLO
         param.in_data = 0xA0B0C0D0
 
-        response = ec_response_hello()
-
-        cmd = cros_ec_command()
-        cmd.version = 0
-        cmd.command = EC_CMD_HELLO
-        cmd.insize = sizeof(response)
-        cmd.outsize = sizeof(param)
-
-        memmove(addressof(cmd.data), addressof(param), cmd.outsize)
-        with open(devpath) as fh:
-            fcntl.ioctl(fh, EC_DEV_IOCXCMD, cmd)
-        memmove(addressof(response), addressof(cmd.data), cmd.insize)
-
+        cmd = send_ec_command(dev, ec_cmd.EC_CMD_HELLO, param, response)
         self.assertEqual(cmd.result, 0, msg="Error sending EC HELLO")
         # magic number that the EC answers on HELLO
         self.assertEqual(response.out_data, 0xA1B2C3D4,
@@ -96,32 +78,16 @@ class TestCrosECMCU(unittest.TestCase):
         self.check_hello("cros_pd")
 
     def check_reboot_rw(self, name):
-        devpath = os.path.join("/dev", name)
-        if not os.path.exists(devpath):
+        dev = os.path.join("/dev", name)
+        if not os.path.exists(dev):
             self.skipTest(f"MCU {name} not found")
 
-        cmd = cros_ec_command()
-        cmd.version = 0
-        cmd.command = EC_CMD_REBOOT
-        cmd.insize = 0
-        cmd.outsize = 0
+        cmd = send_ec_command(dev, ec_cmd.EC_CMD_REBOOT)
+        self.assertEqual(cmd.result, 0, msg="Failed to REBOOT")
 
-        with open(devpath) as fh:
-            fcntl.ioctl(fh, EC_DEV_IOCXCMD, cmd)
-
-        response = ec_response_get_version()
-
-        cmd = cros_ec_command()
-        cmd.version = 0
-        cmd.command = EC_CMD_GET_VERSION
-        cmd.insize = sizeof(response)
-        cmd.outsize = 0
-
-        with open(devpath) as fh:
-            fcntl.ioctl(fh, EC_DEV_IOCXCMD, cmd)
+        param, response = None, ec_response_get_version()
+        cmd = send_ec_command(dev, ec_cmd.EC_CMD_GET_VERSION, param, response)
         self.assertEqual(cmd.result, 0, msg="Failed to GET_VERSION")
-
-        memmove(addressof(response), addressof(cmd.data), cmd.insize)
         self.assertEqual(response.current_image, EC_IMAGE_RW,
                          msg="Current EC image is not RW")
 

@@ -115,21 +115,29 @@ def is_feature_supported(feature):
     global ECFEATURES_CACHE
 
     if ECFEATURES_CACHE == -1:
-        response = ec_response_get_features()
+        param, response = None, ec_response_get_features()
 
-        cmd = cros_ec_command()
-        cmd.version = 0
-        cmd.command = EC_CMD_GET_FEATURES
-        cmd.insize = sizeof(response)
-        cmd.outsize = 0
-
-        with open("/dev/cros_ec") as fh:
-            fcntl.ioctl(fh, EC_DEV_IOCXCMD, cmd)
-        memmove(addressof(response), addressof(cmd.data), cmd.insize)
-
+        cmd = send_ec_command("/dev/cros_ec", EC_CMD_GET_FEATURES, param, response)
         if cmd.result == 0:
             ECFEATURES_CACHE = response.in_data
         else:
             return False
 
     return bool(ECFEATURES_CACHE & EC_FEATURE_MASK_0(feature))
+
+
+def send_ec_command(dev, command, param=None, resp=None):
+    cmd = cros_ec_command()
+    cmd.version = 0
+    cmd.command = command
+    cmd.outsize = 0 if param is None else sizeof(param)
+    cmd.insize = 0 if resp is None else sizeof(resp)
+
+    if cmd.outsize != 0:
+        memmove(addressof(cmd.data), addressof(param), cmd.outsize)
+    with open(dev) as fh:
+        fcntl.ioctl(fh, EC_DEV_IOCXCMD, cmd)
+    if cmd.insize != 0:
+        memmove(addressof(resp), addressof(cmd.data), cmd.insize)
+
+    return cmd
