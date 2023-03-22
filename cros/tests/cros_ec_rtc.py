@@ -35,4 +35,5 @@ class TestCrosECRTC(unittest.TestCase):
             for filename in files:
                 p = os.path.join(dev, filename)
                 self.assertTrue(os.path.exists(p), msg=f"{p} not found")
-        self.assertNotEqual(match, 0, msg="No RTC device found")
+        if match == 0:
+            self.skipTest("No RTC device found")
