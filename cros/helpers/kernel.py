@@ -14,9 +14,8 @@ def current_kernel_version():
     """ Returns the current kernel version as an integer you can
         compare.
     """
-    fd = open("/proc/version", "r")
-    current = fd.read().split()[2].split("-")[0].split(".")
-    fd.close()
+    with open("/proc/version") as fh:
+        current = fh.read().split()[2].split("-")[0].split(".")
     return version_to_int(int(current[0]), int(current[1]), int(current[2]))
 
 
@@ -24,15 +23,11 @@ def kernel_lower_than(version, major, minor):
     """ Returns true if the given version is lower than the running kernel
         version.
     """
-    if version_to_int(version, major, minor) > current_kernel_version():
-        return True
-    return False
+    return current_kernel_version() < version_to_int(version, major, minor)
 
 
 def kernel_greater_than(version, major, minor):
     """ Returns true if the given version is greater than the running kernel
         version.
     """
-    if version_to_int(version, major, minor) < current_kernel_version():
-        return True
-    return False
+    return current_kernel_version() > version_to_int(version, major, minor)

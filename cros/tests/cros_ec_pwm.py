@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from cros.helpers.sysfs import *
+import re
 import unittest
 import os
+
 
 class TestCrosECPWM(unittest.TestCase):
     def test_cros_ec_pwm_backlight(self):
@@ -13,42 +14,31 @@ class TestCrosECPWM(unittest.TestCase):
         """
         if not os.path.exists("/sys/class/backlight/backlight/max_brightness"):
             self.skipTest("No backlight pwm found")
-        is_ec_pwm = False
+
         if not os.path.exists("/sys/kernel/debug/pwm"):
             self.skipTest("/sys/kernel/debug/pwm not found")
-        fd = open("/sys/kernel/debug/pwm", "r")
-        line = fd.readline()
-        while line and not is_ec_pwm:
-            if line[0] != " " and ":ec-pwm" in line:
-                line = fd.readline()
-                while line:
-                    if line[0] == "\n":
-                        is_ec_pwm = False
-                        break
-                    if "backlight" in line:
-                        is_ec_pwm = True
-                        break
-                    line = fd.readline()
-            line = fd.readline()
-        fd.close()
-        if not is_ec_pwm:
-            self.skipTest("No EC backlight pwm found")
-        fd = open("/sys/class/backlight/backlight/max_brightness", "r")
-        brightness = int(int(fd.read()) / 2)
-        fd.close()
-        fd = open("/sys/class/backlight/backlight/brightness", "w")
-        fd.write(str(brightness))
-        fd.close()
-        fd = open("/sys/kernel/debug/pwm", "r")
-        line = fd.readline()
-        while line:
-            if "backlight" in line:
-                start = line.find("duty") + 6
-                self.assertNotEqual(start, 5, msg=f"error reading back PWM info: {line}")
-                end = start + line[start:].find(" ")
-                self.assertNotEqual(start, end, msg=f"error reading back PWM info: {line}")
-                duty = int(line[start:end])
-                self.assertNotEqual(duty, 0, msg=f"error reading back PWM info: {line}")
+
+        with open("/sys/kernel/debug/pwm") as fh:
+            pwm = fh.read()
+        for s in pwm.split("\n\n"):
+            if re.match(r".*:ec-pwm.*backlight", s, re.DOTALL):
+                ec_pwm = s
                 break
-            line = fd.readline()
-        fd.close()
+        else:
+            self.skipTest("No EC backlight pwm found")
+
+        with open("/sys/class/backlight/backlight/max_brightness") as fh:
+            brightness = int(int(fh.read()) / 2)
+        with open("/sys/class/backlight/backlight/brightness", "w") as fh:
+            fh.write(str(brightness))
+        for s in ec_pwm.split("\n"):
+            if "backlight" not in s:
+                continue
+
+            m = re.search(r"duty: (\d+)", s)
+            if m:
+                duty = int(m.group(1))
+                self.assertNotEqual(duty, 0, msg="duty should not be 0")
+                break
+        else:
+            self.fail("Failed to parse duty")

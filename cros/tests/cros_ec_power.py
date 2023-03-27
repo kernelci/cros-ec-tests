@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from cros.helpers.sysfs import *
 import unittest
+
+from cros.helpers.sysfs import sysfs_check_attributes_exists
 
 
 class TestCrosECPower(unittest.TestCase):
